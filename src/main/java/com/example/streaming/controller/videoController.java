@@ -32,7 +32,7 @@ public class videoController {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(outputStream ->{
-                    FFmpeg.atPath()
+                    FFmpeg.atPath()         //ffmpeg 커맨드 명령어를 이용함으로 사전에 ffmpeg 파일 설치와 환경변수 세팅이 필요함
                             .addArgument("-re")
                             .addArguments("-acodec", "pcm_s16le")
                             .addArguments("-rtsp_transport", "tcp")
