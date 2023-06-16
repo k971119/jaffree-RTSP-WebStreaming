@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CCTV 영상 스트리밍</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.4.0/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+  <script>
+    var stompClient = null;
+
+    function connect() {
+      var socket = new SockJS('/cctv');
+      stompClient = Stomp.over(socket);
+
+      stompClient.connect({}, function (frame) {
+        stompClient.subscribe('/topic/streaming', function (videoData) {
+          // 비디오 데이터를 받아서 화면에 표시하는 로직을 구현
+          var videoElement = document.getElementById('video');
+          videoElement.src = "data:image/jpeg;base64," + btoa(String.fromCharCode.apply(null, videoData.body));
+        });
+
+        sendStreamingRequest(); // 수정된 부분: 연결이 성공한 후 스트리밍 요청을 보냄
+      });
+    }
+
+    function disconnect() {
+      if (stompClient !== null) {
+        stompClient.disconnect();
+      }
+      console.log("Disconnected");
+    }
+
+    window.onload = function () {
+      connect();
+    };
+
+    window.onbeforeunload = function () {
+      disconnect();
+    };
+
+    function sendStreamingRequest() {
+      // 수정된 부분: 스트리밍 요청 메시지를 서버로 전송
+      stompClient.send("/app/streaming", {}, 'rtsp://user:zxcv123!@192.168.0.127:554/profile2/media.smp');
+    }
+  </script>
+</head>
+<body>
+<img id="video" src=""></img>
+</body>
+</html>

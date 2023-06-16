@@ -7,33 +7,42 @@
     <script>
         var stompClient = null;
 
-        function connect() {
+        /*function connect() {
             var socket = new SockJS('/cctv');
             stompClient = Stomp.over(socket);
 
             stompClient.connect({}, function (frame) {
-                stompClient.subscribe("/topic/streaming", function (videoData) {
+                stompClient.subscribe('/topic/streaming', function (videoData) {
                     // 비디오 데이터를 받아서 화면에 표시하는 로직을 구현
-                    var videoElement = document.getElementById('video');
-                    videoElement.src = "data:image/jpeg;base64," + btoa(String.fromCharCode.apply(null, videoData.body));
-                });
-            });
+                    var canvas = document.getElementById('videoCanvas');
+                    var context = canvas.getContext('2d');
 
+                    const imageDataArray = new Uint8ClampedArray(videoData);
+                    const imageDataObj = new ImageData(imageDataArray, 640, 480);
 
-            socket.onopen = function() {
-
-                stompClient.subscribe("/topic/streaming", function (videoData) {
-                    // 비디오 데이터를 받아서 화면에 표시하는 로직을 구현
-                    var videoElement = document.getElementById('video');
-                    videoElement.src = "data:image/jpeg;base64," + btoa(String.fromCharCode.apply(null, videoData.body));
+                    context.clearRect(0, 0, canvas.width, canvas.height); // 이전 프레임 지우기
+                    context.putImageData(imageDataObj, 0, 0); // 새로운 프레임 그리기
                 });
 
                 stompClient.send("/app/streaming", {}, 'rtsp://user:zxcv123!@192.168.0.127:554/profile2/media.smp');
+            });
+        }*/
+        var stompClient = null;
 
-            }
-            socket.onmessage = function(e){
-                console.log(e);
-            }
+        function connect() {
+            var socket = new SockJS('/cctv');
+            stompClient = Stomp.over(socket);
+            stompClient.debug = null;
+            stompClient.connect({}, function (frame) {
+                stompClient.subscribe('/topic/streaming', function (response) {
+                    var base64Image = response.body;
+                    var imgElement = document.getElementById('videoImage');
+
+                    imgElement.src = 'data:image/jpeg;base64,' + base64Image;
+                });
+
+                stompClient.send("/app/streaming", {}, 'rtsp://user:zxcv123!@192.168.0.127:554/profile2/media.smp');
+            });
         }
 
         function disconnect() {
@@ -57,6 +66,6 @@
     </script>
 </head>
 <body>
-<img id="video" src=""></img>
+<img id = "videoImage"></img>
 </body>
 </html>
